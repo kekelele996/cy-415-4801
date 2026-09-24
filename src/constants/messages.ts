@@ -14,20 +14,23 @@ export const FORM_MESSAGES = {
   requiredPhone: '请填写联系方式',
   imageLimit: '最多上传 4 张图片',
   exchangeNeedOwnItem: '请先发布一件可交换物品',
+  exchangeOfferRange: '请勾选 1-3 件自己的闲置用于交换',
 };
 
 export const LOG_MESSAGES = {
   storageHydrated: 'storage hydrated with status maps',
-  itemStatusUsed: `ItemStatus includes ${ItemStatus.AVAILABLE}, ${ItemStatus.EXCHANGED}, ${ItemStatus.OFFLINE}`,
-  exchangeStatusUsed: `ExchangeStatus includes ${ExchangeStatus.PENDING}, ${ExchangeStatus.ACCEPTED}, ${ExchangeStatus.REJECTED}, ${ExchangeStatus.COMPLETED}`,
+  itemStatusUsed: `ItemStatus includes ${ItemStatus.AVAILABLE}, ${ItemStatus.RESERVED}, ${ItemStatus.EXCHANGED}, ${ItemStatus.OFFLINE}`,
+  exchangeStatusUsed: `ExchangeStatus includes ${ExchangeStatus.PENDING}, ${ExchangeStatus.ACCEPTED}, ${ExchangeStatus.REJECTED}, ${ExchangeStatus.CANCELLED}, ${ExchangeStatus.COMPLETED}`,
 };
 
 export const STATUS_MESSAGE_MAP = {
   [ItemStatus.AVAILABLE]: '这件物品可发起交换',
+  [ItemStatus.RESERVED]: '这件物品正在交换中，已被保留',
   [ItemStatus.EXCHANGED]: '这件物品已完成交换',
   [ItemStatus.OFFLINE]: '这件物品已下架',
   [ExchangeStatus.PENDING]: '等待对方确认',
-  [ExchangeStatus.ACCEPTED]: '交换已同意，可确认完成',
-  [ExchangeStatus.REJECTED]: '交换请求已拒绝',
+  [ExchangeStatus.ACCEPTED]: '交换已同意，等待双方确认交货',
+  [ExchangeStatus.REJECTED]: '交换请求已拒绝，物品保留已释放',
+  [ExchangeStatus.CANCELLED]: '交换请求已取消，物品保留已释放',
   [ExchangeStatus.COMPLETED]: '交换流程已完成',
 };

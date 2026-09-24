@@ -442,6 +442,53 @@ main {
   gap: 16px;
 }
 
+.offer-picker {
+  display: grid;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.offer-picker__label {
+  font-weight: 700;
+}
+
+.offer-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 7px;
+  padding: 8px 10px;
+  background: color-mix(in oklch, var(--rs-primary), transparent 92%);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.offer-picker__option.checked {
+  background: color-mix(in oklch, var(--rs-primary), transparent 80%);
+  font-weight: 700;
+}
+
+.offer-picker__option input {
+  width: auto;
+}
+
+.offer-picker__option:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.exchange-card__waiting {
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: color-mix(in oklch, #bb7a35, transparent 86%);
+  color: #9b5c1c;
+  font-weight: 700;
+}
+
+.exchange-card__message {
+  color: color-mix(in oklch, var(--rs-text), transparent 30%);
+}
+
 label {
   display: grid;
   gap: 8px;

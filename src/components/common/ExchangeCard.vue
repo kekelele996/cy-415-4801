@@ -8,27 +8,24 @@
     </header>
     <div class="exchange-card__items">
       <div>
-        <span>拿出</span>
-        <strong>{{ fromItem?.title ?? '未知物品' }}</strong>
+        <span>拿出 {{ fromItems.length > 1 ? `${fromItems.length} 件` : '' }}</span>
+        <strong v-for="fromItem in fromItems" :key="fromItem.id">{{ fromItem.title }}</strong>
+        <strong v-if="!fromItems.length">未知物品</strong>
       </div>
       <div>
         <span>换取</span>
         <strong>{{ toItem?.title ?? '未知物品' }}</strong>
       </div>
     </div>
-    <p>{{ exchange.message || formatStatusMessage(exchange.status) }}</p>
+    <p class="exchange-card__waiting">{{ waitingText }}</p>
+    <p v-if="exchange.message" class="exchange-card__message">{{ exchange.message }}</p>
     <footer>
       <span v-if="fromUser && toUser">{{ fromUser.nickname }} → {{ toUser.nickname }}</span>
-      <div v-if="canOperate" class="exchange-card__actions">
-        <button v-if="exchange.status === ExchangeStatus.PENDING" type="button" @click="$emit('accept', exchange.id)">
-          同意
-        </button>
-        <button v-if="exchange.status === ExchangeStatus.PENDING" type="button" @click="$emit('reject', exchange.id)">
-          拒绝
-        </button>
-        <button v-if="exchange.status === ExchangeStatus.ACCEPTED" type="button" @click="$emit('complete', exchange.id)">
-          完成
-        </button>
+      <div v-if="hasActions" class="exchange-card__actions">
+        <button v-if="canAccept" type="button" @click="$emit('accept', exchange.id)">同意</button>
+        <button v-if="canReject" type="button" @click="$emit('reject', exchange.id)">拒绝</button>
+        <button v-if="canCancel" type="button" @click="$emit('cancel', exchange.id)">取消</button>
+        <button v-if="canConfirm" type="button" @click="$emit('confirm', exchange.id)">确认交货</button>
       </div>
     </footer>
   </article>
@@ -42,7 +39,12 @@ import type { Exchange } from '@/models/exchange';
 import type { Item } from '@/models/item';
 import type { User } from '@/models/user';
 import { useAuthStore } from '@/stores/authStore';
-import { formatDate, formatExchangeStatus, formatStatusMessage, statusToneClass } from '@/utils/formatters';
+import {
+  formatDate,
+  formatExchangeStatus,
+  formatExchangeWaiting,
+  statusToneClass,
+} from '@/utils/formatters';
 
 const props = defineProps<{
   exchange: Exchange;
@@ -53,17 +55,39 @@ const props = defineProps<{
 defineEmits<{
   accept: [id: string];
   reject: [id: string];
-  complete: [id: string];
+  cancel: [id: string];
+  confirm: [id: string];
 }>();
 
 const authStore = useAuthStore();
-const fromItem = computed(() => props.items.find((item) => item.id === props.exchange.from_item_id));
+const fromItems = computed(() =>
+  props.exchange.from_item_ids
+    .map((itemId) => props.items.find((item) => item.id === itemId))
+    .filter((item): item is Item => Boolean(item)),
+);
 const toItem = computed(() => props.items.find((item) => item.id === props.exchange.to_item_id));
 const fromUser = computed(() => props.users.find((user) => user.id === props.exchange.from_user_id));
 const toUser = computed(() => props.users.find((user) => user.id === props.exchange.to_user_id));
-const canOperate = computed(
+
+const viewerId = computed(() => authStore.currentUser?.id);
+const isReceiver = computed(() => viewerId.value === props.exchange.to_user_id);
+const isInitiator = computed(() => viewerId.value === props.exchange.from_user_id);
+const myConfirmed = computed(() =>
+  isInitiator.value ? props.exchange.from_confirmed : isReceiver.value ? props.exchange.to_confirmed : true,
+);
+
+const waitingText = computed(() => formatExchangeWaiting(props.exchange, viewerId.value, props.users));
+
+const canAccept = computed(() => isReceiver.value && props.exchange.status === ExchangeStatus.PENDING);
+const canReject = computed(() => isReceiver.value && props.exchange.status === ExchangeStatus.PENDING);
+const canCancel = computed(() => isInitiator.value && props.exchange.status === ExchangeStatus.PENDING);
+const canConfirm = computed(
   () =>
-    authStore.currentUser?.id === props.exchange.to_user_id ||
-    (authStore.currentUser?.id === props.exchange.from_user_id && props.exchange.status === ExchangeStatus.ACCEPTED),
+    (isInitiator.value || isReceiver.value) &&
+    props.exchange.status === ExchangeStatus.ACCEPTED &&
+    !myConfirmed.value,
+);
+const hasActions = computed(
+  () => canAccept.value || canReject.value || canCancel.value || canConfirm.value,
 );
 </script>

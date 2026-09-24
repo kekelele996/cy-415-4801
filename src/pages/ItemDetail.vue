@@ -29,19 +29,34 @@
         <UserBrief v-if="owner" :user="owner" />
 
         <div v-if="!isMine" class="exchange-box">
-          <label>
-            我的交换物
-            <select v-model="selectedItemId">
-              <option value="">选择一件我发布的可交换物品</option>
-              <option v-for="myItem in ownAvailableItems" :key="myItem.id" :value="myItem.id">
-                {{ myItem.title }}
-              </option>
-            </select>
-          </label>
+          <div class="offer-picker">
+            <span class="offer-picker__label">
+              我的交换物（已选 {{ selectedItemIds.length }}/{{ MAX_OFFER_ITEMS }}）
+            </span>
+            <label
+              v-for="myItem in ownAvailableItems"
+              :key="myItem.id"
+              class="offer-picker__option"
+              :class="{ checked: selectedItemIds.includes(myItem.id) }"
+            >
+              <input
+                type="checkbox"
+                :value="myItem.id"
+                :checked="selectedItemIds.includes(myItem.id)"
+                :disabled="!selectedItemIds.includes(myItem.id) && selectedItemIds.length >= MAX_OFFER_ITEMS"
+                @change="toggleOffer(myItem.id)"
+              />
+              {{ myItem.title }}
+            </label>
+            <p v-if="!ownAvailableItems.length" class="form-note">{{ FORM_MESSAGES.exchangeNeedOwnItem }}</p>
+          </div>
           <label>
             留言
             <textarea v-model="messageText" rows="3" />
           </label>
+          <p v-if="item.status === ItemStatus.RESERVED" class="form-note">
+            {{ STATUS_MESSAGE_MAP[ItemStatus.RESERVED] }}，暂不能发起新交换
+          </p>
           <button class="primary-button" type="button" :disabled="item.status !== ItemStatus.AVAILABLE" @click="requestExchange">
             发起交换
           </button>
@@ -62,8 +77,9 @@ import { RouterLink, useRoute } from 'vue-router';
 import EmptyState from '@/components/common/EmptyState.vue';
 import ItemImageGallery from '@/components/common/ItemImageGallery.vue';
 import UserBrief from '@/components/common/UserBrief.vue';
-import { ExchangeStatus } from '@/constants/exchange';
+import { ExchangeStatus, MAX_OFFER_ITEMS } from '@/constants/exchange';
 import { ItemStatus } from '@/constants/item';
+import { FORM_MESSAGES, STATUS_MESSAGE_MAP } from '@/constants/messages';
 import { useAuthStore } from '@/stores/authStore';
 import { useExchangeStore } from '@/stores/exchangeStore';
 import { useItemStore } from '@/stores/itemStore';
@@ -81,24 +97,37 @@ const isMine = computed(() => authStore.currentUser?.id === item.value?.user_id)
 const ownAvailableItems = computed(() =>
   authStore.currentUser ? itemStore.availableMyItems(authStore.currentUser.id) : [],
 );
-const selectedItemId = ref('');
-const messageText = ref('我想用这件闲置与你交换，可以沟通时间和地点。');
+const selectedItemIds = ref<string[]>([]);
+const messageText = ref('我想用这些闲置与你交换，可以沟通时间和地点。');
+
+const toggleOffer = (itemId: string) => {
+  if (selectedItemIds.value.includes(itemId)) {
+    selectedItemIds.value = selectedItemIds.value.filter((id) => id !== itemId);
+    return;
+  }
+  if (selectedItemIds.value.length >= MAX_OFFER_ITEMS) {
+    message(`一次最多勾选 ${MAX_OFFER_ITEMS} 件`, 'error');
+    return;
+  }
+  selectedItemIds.value = [...selectedItemIds.value, itemId];
+};
 
 const requestExchange = async () => {
   if (!authStore.currentUser || !item.value || !owner.value) return;
   if (!itemStore.assertCanExchange(authStore.currentUser.id)) return;
-  if (!selectedItemId.value) {
-    message('请选择一件自己的物品', 'error');
+  if (!selectedItemIds.value.length || selectedItemIds.value.length > MAX_OFFER_ITEMS) {
+    message(FORM_MESSAGES.exchangeOfferRange, 'error');
     return;
   }
   await exchangeStore.create({
     from_user_id: authStore.currentUser.id,
     to_user_id: owner.value.id,
-    from_item_id: selectedItemId.value,
+    from_item_ids: [...selectedItemIds.value],
     to_item_id: item.value.id,
     status: ExchangeStatus.PENDING,
     message: messageText.value,
   });
+  selectedItemIds.value = [];
 };
 
 const offlineItem = async () => {

@@ -12,7 +12,7 @@ const seedItems: Item[] = [
     category: '数码',
     condition: ItemCondition.GOOD,
     images: [],
-    status: ItemStatus.AVAILABLE,
+    status: ItemStatus.RESERVED,
     location: '杭州 · 西湖',
     created_at: new Date().toISOString(),
   },

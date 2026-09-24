@@ -33,8 +33,9 @@
         :items="itemStore.items"
         :users="authStore.users"
         @accept="exchangeStore.accept"
-        @reject="exchangeStore.reject"
-        @complete="completeExchange"
+        @reject="rejectExchange"
+        @cancel="cancelExchange"
+        @confirm="confirmExchange"
       />
     </div>
     <EmptyState
@@ -73,9 +74,20 @@ const mine = computed(() => {
 const visibleExchanges = computed(() => mine.value);
 const stats = useExchangeStats(() => exchangeStore.exchanges);
 
-const completeExchange = async (id: string) => {
-  await exchangeStore.complete(id);
-  itemStore.items = itemStore.items.map((item) => item);
+const rejectExchange = async (id: string) => {
+  await exchangeStore.reject(id);
+  await itemStore.hydrate();
+};
+
+const cancelExchange = async (id: string) => {
+  await exchangeStore.cancel(id);
+  await itemStore.hydrate();
+};
+
+const confirmExchange = async (id: string) => {
+  if (!authStore.currentUser) return;
+  await exchangeStore.confirm(id, authStore.currentUser.id);
+  await itemStore.hydrate();
 };
 
 void ExchangeStatus.PENDING;

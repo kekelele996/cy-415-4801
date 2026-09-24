@@ -14,6 +14,8 @@ export const FORM_MESSAGES = {
   requiredPhone: '请填写联系方式',
   imageLimit: '最多上传 4 张图片',
   exchangeNeedOwnItem: '请先发布一件可交换物品',
+  exchangeNeedSelect: '请至少勾选一件自己的物品',
+  exchangeItemLimit: '一笔交换最多勾选 3 件物品',
 };
 
 export const LOG_MESSAGES = {
@@ -24,10 +26,12 @@ export const LOG_MESSAGES = {
 
 export const STATUS_MESSAGE_MAP = {
   [ItemStatus.AVAILABLE]: '这件物品可发起交换',
+  [ItemStatus.RESERVED]: '这件物品正在交换中，暂不可发起',
   [ItemStatus.EXCHANGED]: '这件物品已完成交换',
   [ItemStatus.OFFLINE]: '这件物品已下架',
   [ExchangeStatus.PENDING]: '等待对方确认',
-  [ExchangeStatus.ACCEPTED]: '交换已同意，可确认完成',
+  [ExchangeStatus.ACCEPTED]: '交换已同意，等待双方确认交货',
   [ExchangeStatus.REJECTED]: '交换请求已拒绝',
+  [ExchangeStatus.CANCELLED]: '交换请求已取消',
   [ExchangeStatus.COMPLETED]: '交换流程已完成',
 };

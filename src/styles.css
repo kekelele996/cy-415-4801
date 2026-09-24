@@ -588,6 +588,64 @@ textarea {
   margin: 0;
 }
 
+.exchange-card__progress {
+  font-weight: 700;
+  color: var(--rs-primary);
+}
+
+.exchange-card__confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.exchange-card__confirm span {
+  border: 1px solid var(--rs-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: color-mix(in oklch, var(--rs-text), transparent 42%);
+  font-size: 0.8rem;
+}
+
+.exchange-card__confirm span.done {
+  border-color: transparent;
+  background: color-mix(in oklch, var(--rs-primary), transparent 86%);
+  color: var(--rs-primary);
+}
+
+.exchange-card__message {
+  color: color-mix(in oklch, var(--rs-text), transparent 30%);
+}
+
+.exchange-picker {
+  display: grid;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.exchange-picker__list {
+  display: grid;
+  gap: 8px;
+}
+
+.exchange-picker__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--rs-border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  font-weight: 400;
+}
+
+.exchange-picker__option input {
+  width: auto;
+}
+
+.exchange-picker__option--disabled {
+  opacity: 0.5;
+}
+
 .exchange-card__actions {
   display: flex;
   flex-wrap: wrap;
